@@ -4,6 +4,7 @@
 #include "stm32h7xx_hal.h"
 #include "lvgl.h"
 #include "hx8347.hpp"
+#include "touch.hpp"
 
 #define SCREEN_WIDTH  240
 #define SCREEN_HEIGHT 320
@@ -39,34 +40,51 @@ static void my_flush_cb(lv_display_t * disp, const lv_area_t * area, uint8_t * p
     lv_display_flush_ready(disp);
 }
 
+void my_touchpad_read(lv_indev_t * indev, lv_indev_data_t * data)
+{
+    /* Check if the screen is currently being touched */
+    uint16_t x, y;
+    if (touch_get_coordinates(&x, &y)) {
+        data->state = LV_INDEV_STATE_PRESSED;
+        /* Get the physical X and Y coordinates */
+        data->point.x = x;
+        data->point.y = y;
+    }
+    else
+    {
+        data->state = LV_INDEV_STATE_RELEASED;
+    }
+}
+
 extern "C" void InitializeLvgl()
 {
+    // General hardware and library initialisation
     lcd_init();
-    printf("LCD initialized.\n");
-    
-    // Initialize LVGL core
+    touch_init();
     lv_init();
-
-    /* Set the tick callback to use HAL_GetTick() */
     lv_tick_set_cb(HAL_GetTick);
 
-    // Create a display object
+    // Display device initialisation, we use a flush callback to send the bitmap data to the LCD
     lv_display_t * disp = lv_display_create(SCREEN_WIDTH, SCREEN_HEIGHT);
-
-    // Set the buffer (LVGL v9 expects a pointer to the buffer array and its size in bytes)
     lv_display_set_buffers(disp, screenBuf, NULL, sizeof(screenBuf), LV_DISPLAY_RENDER_MODE_PARTIAL);
-
-    // Set the flush callback where you will grab the bitmaps
     lv_display_set_flush_cb(disp, my_flush_cb);
+
+    // Touch input device initialisation, we use a read callback to get the touch coordinates
+    lv_indev_t * indev = lv_indev_create();
+    lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);
+    lv_indev_set_read_cb(indev, my_touchpad_read);
 }
 
 extern "C" void LoadLvglScreen()
 {
-#if 0
-    /* Create a simple label */
-    lv_obj_t *label = lv_label_create(lv_scr_act());
-    lv_label_set_text(label, "Hello, ResMed!");
-    lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
+#if 1
+    // /* Create a simple label */
+    // lv_obj_t *label = lv_label_create(lv_scr_act());
+    // lv_label_set_text(label, "Hello, ResMed!");
+    // lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
+
+    void lv_example_flex_flow(void);
+    lv_example_flex_flow();
 #else
     lv_obj_t * screen = lv_screen_active();
     lv_obj_set_flex_flow(screen, LV_FLEX_FLOW_ROW);

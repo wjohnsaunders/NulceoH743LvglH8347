@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <stdint.h>
+#include <cstdint>
 
 void lcd_init();
 void lcd_set_address_window(int32_t x1, int32_t y1, int32_t x2, int32_t y2);

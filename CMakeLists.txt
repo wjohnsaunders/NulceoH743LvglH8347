@@ -49,6 +49,7 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     src/LvglDemo.cpp
     src/hx8347.cpp
+    src/touch.cpp
 )
 
 # Add include paths
@@ -71,6 +72,7 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
 
     # Add user defined libraries
     lvgl
+    lvgl_examples
 )
 
 #
